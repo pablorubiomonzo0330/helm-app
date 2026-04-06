@@ -1,0 +1,11 @@
+A project created to learn more about Kubernetes and technologies that are used with it.
+In this repository are .yaml files to find regarding the configuration needed for the app to be able to be run in Kubernetes.
+
+Use "helm install <DESIRED_NAME> kotlin-todo-app/kotlin-todo-app -f <VALUES-FILE>" to start using the application.
+
+I recommend you to make use of the values-dev.yaml file which can be found in the same repository and pass it using the
+following command when installing:  "helm install <DESIRED_NAME> kotlin-todo-app/kotlin-todo-app -f <PATH_TO_values-dev.yaml>"
+
+If you find the app is a little bit slow or you just want to add anything or play with it, you can always tweak the options under values-dev.yaml,
+or create your own values and pass them.
+
