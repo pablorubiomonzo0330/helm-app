@@ -1,12 +1,12 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: myapp-tls
+  name: {{ .Release.Name }}-tls-certificate
   namespace: default
 spec:
-  secretName: myapp-tls-secret
+  secretName: {{ .Values.tlssecret }}
   dnsNames:
-    - localhost
+    - {{ .Values.dnsName }}
   issuerRef:
     name: {{ .Values.issuerRef.name }}
     kind: ClusterIssuer

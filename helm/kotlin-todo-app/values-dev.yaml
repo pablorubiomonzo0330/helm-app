@@ -17,12 +17,22 @@ backendService:
   type: ClusterIP
   port: 8080
 
+timeoutSeconds: 5
+
+failureThreshold: 3
+
+periodSeconds: 5
+
 backendServicePort: 8080
 
 containerImage: rmpablo1/kotlin-todo-app
 
 labels:
   app: backend
+
+dnsName: localhost
+
+tlssecret: myapp-tls-secret
 
 imagePullPolicy: IfNotPresent
 

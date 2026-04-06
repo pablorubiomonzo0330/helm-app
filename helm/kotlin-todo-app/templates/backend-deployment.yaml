@@ -27,23 +27,21 @@ spec:
             httpGet:
               path: {{ .Values.healthCheck.paths.startUp }}
               port: {{ .Values.healthCheck.port }}
-            timeoutSeconds: 5
+            timeoutSeconds: {{ .Values.timeoutSeconds }}
             initialDelaySeconds: 30
-            failureThreshold: 30
-            periodSeconds: 10
+            failureThreshold: {{ .Values.failureThreshold }}
+            periodSeconds: {{ .Values.periodSeconds }}
           livenessProbe:
             httpGet:
               path: {{ .Values.healthCheck.paths.liveness }}
               port: {{ .Values.healthCheck.port }}
-            initialDelaySeconds: 10
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
+            periodSeconds: {{ .Values.periodSeconds }}
+            timeoutSeconds: {{ .Values.timeoutSeconds }}
+            failureThreshold: {{ .Values.failureThreshold }}
           readinessProbe:
             httpGet:
               path: {{ .Values.healthCheck.paths.readiness }}
               port: {{ .Values.healthCheck.port }}
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            timeoutSeconds: 5
-            failureThreshold: 3
+            periodSeconds: {{ .Values.periodSeconds }}
+            timeoutSeconds: {{ .Values.timeoutSeconds }}
+            failureThreshold: {{ .Values.failureThreshold }}
