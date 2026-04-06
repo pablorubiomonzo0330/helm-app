@@ -1,0 +1,63 @@
+postgresql:
+  auth:
+    username: postgres
+    password: postgres
+    database: tododb
+
+  image:
+    pullPolicy: IfNotPresent
+
+redis:
+  auth:
+    enabled: false
+  image:
+    pullPolicy: IfNotPresent
+
+backendService:
+  type: ClusterIP
+  port: 8080
+
+backendServicePort: 8080
+
+containerImage: rmpablo1/kotlin-todo-app
+
+labels:
+  app: backend
+
+imagePullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    memory: "1024Mi"
+
+healthCheck:
+  port: 8080
+  paths:
+    startUp: /actuator/health/liveness
+    liveness: /actuator/health/liveness
+    readiness: /actuator/health/readiness
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  cpuAverageUtilization: 80
+  memoryAverageUtilization: 40
+
+clusterIssuer:
+  name: self-signedssl
+  spec:
+    selfSigned: {}
+
+issuerRef:
+  name: self-signedssl
+
+ingress:
+  enabled: true
+  className: nginx
+  tls:
+    enabled: true
+    secretName: myapp-tls-secret

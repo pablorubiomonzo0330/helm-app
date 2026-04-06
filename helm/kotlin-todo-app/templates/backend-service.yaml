@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name}}-backend-service
+  labels:
+    app: {{ .Values.labels.app}}-service
+spec:
+  type:  {{ .Values.backendService.type }}
+  ports:
+    - name: http
+      port: {{ .Values.backendService.port }}
+      targetPort: {{ .Values.backendService.port }}
+  selector:
+{{ .Values.labels | toYaml | indent 4 }}

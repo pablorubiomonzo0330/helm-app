@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name}}-backend
+spec:
+  replicas: {{ .Values.autoscaling.minReplicas }}
+  selector:
+    matchLabels:
+{{ .Values.labels | toYaml | indent 6 }}
+  template:
+    metadata:
+      labels:
+{{ .Values.labels | toYaml | indent 8 }}
+    spec:
+      containers:
+        - name: backend
+          image: {{ .Values.containerImage | quote }}
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: {{ .Release.Name }}-postgresql
+            - name: REDIS_HOST
+              value: {{ .Release.Name}}-redis-master
+          resources:
+{{ .Values.resources | toYaml | indent 12}}
+          startupProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.paths.startUp }}
+              port: {{ .Values.healthCheck.port }}
+            timeoutSeconds: 5
+            initialDelaySeconds: 30
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.paths.liveness }}
+              port: {{ .Values.healthCheck.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.healthCheck.paths.readiness }}
+              port: {{ .Values.healthCheck.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
