@@ -1,63 +1,81 @@
+# Configuration for the PostgreSQL Database sub-chart/dependency
 postgresql:
   auth:
-    username: postgres
-    password: postgres
-    database: tododb
+    username: postgres   # The administrative user for the database
+    password: postgres   # Password for the user (Keep in mind: use Secrets for non-dev environments!)
+    database: tododb     # The name of the specific database to be created on startup
 
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: IfNotPresent # Only download the image if it's not already stored on the worker node
 
+# Configuration for the Redis cache dependency
 redis:
   auth:
-    enabled: false
+    enabled: false       # Authentication is disabled for this dev environment to simplify setup
   image:
-    pullPolicy: IfNotPresent
+    pullPolicy: IfNotPresent # Saves bandwidth by using the local image if available
 
+# Internal networking configuration for the backend application
 backendService:
-  type: ClusterIP
-  port: 8080
+  type: ClusterIP        # Internal-only IP; the app is only reachable within the cluster
+  port: 8080             # The port the Service will listen on inside the cluster
 
-backendServicePort: 8080
+# Health check timing settings (used in Probes)
+timeoutSeconds: 5        # How long to wait for a response before considering the probe a failure
+failureThreshold: 3      # How many times the probe can fail before K8s restarts the container
+periodSeconds: 5         # How often (in seconds) to perform the health check
 
-containerImage: rmpablo1/kotlin-todo-app
+backendServicePort: 8080 # Duplicate/helper value for the backend port
 
+containerImage: rmpablo1/kotlin-todo-app # The Docker Hub repository and image for your app
+
+# Standard metadata to help K8s organize and find resources
 labels:
-  app: backend
+  app: backend           # Label used by the Service selector to find these specific Pods
 
-imagePullPolicy: IfNotPresent
+dnsName: localhost       # The domain name assigned to this application
 
+tlssecret: myapp-tls-secret # The name of the K8s Secret containing SSL/TLS certificates
+
+imagePullPolicy: IfNotPresent # Global setting for when to pull the main application image
+
+# Resource management: Defining the "Contract" between the app and the Node
 resources:
   requests:
-    cpu: "500m"
-    memory: "512Mi"
+    cpu: "500m"          # Guaranteed amount of CPU (0.5 cores) reserved for the container
+    memory: "512Mi"      # Guaranteed amount of RAM reserved
   limits:
-    memory: "1024Mi"
+    memory: "1024Mi"     # The absolute maximum RAM the container can use before being "OOMKilled"
 
+# Specific endpoints for Spring Boot Actuator health checks
 healthCheck:
-  port: 8080
+  port: 8080             # Port where the health endpoints are exposed
   paths:
-    startUp: /actuator/health/liveness
-    liveness: /actuator/health/liveness
-    readiness: /actuator/health/readiness
+    startUp: /actuator/health/liveness    # Check used to see if the app has finished booting
+    liveness: /actuator/health/liveness   # Ongoing check: "Is the app still running?"
+    readiness: /actuator/health/readiness # Ongoing check: "Is the app ready to handle requests?"
 
+# Horizontal Pod Autoscaler (HPA) settings
 autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 1
-  cpuAverageUtilization: 80
-  memoryAverageUtilization: 40
+  enabled: false         # Disabled for dev to save local resources (CPU/RAM)
+  minReplicas: 1         # Minimum number of Pods to keep running
+  maxReplicas: 1         # Maximum number of Pods the cluster can scale up to
+  cpuAverageUtilization: 80    # Scale up if average CPU usage hits 80%
+  memoryAverageUtilization: 40 # Scale up if average RAM usage hits 40%
 
+# cert-manager configuration for generating SSL certificates
 clusterIssuer:
-  name: self-signedssl
+  name: self-signedssl   # The name of the CA/Issuer that signs the certificates
   spec:
-    selfSigned: {}
+    selfSigned: {}       # Tells cert-manager to create a local, non-trusted SSL for testing
 
 issuerRef:
-  name: self-signedssl
+  name: self-signedssl   # Reference used by the Certificate resource to find the Issuer
 
+# Ingress configuration: How users access the app from outside the cluster
 ingress:
-  enabled: true
-  className: nginx
+  enabled: true          # Enables the creation of an Ingress resource
+  className: nginx       # Tells the cluster to use the Nginx Ingress Controller
   tls:
-    enabled: true
-    secretName: myapp-tls-secret
+    enabled: true        # Enables HTTPS
+    secretName: myapp-tls-secret # Uses this secret to store the generated SSL certificate
